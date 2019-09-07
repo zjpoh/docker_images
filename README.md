@@ -25,3 +25,4 @@ docker start/stop <container_name>
 - [`leetcode`](leetcode): Leetcode image.
 - [`my_base`](my_base): My base image containing myrc.
 - [`numpy`](numpy): Numpy image for development work.
+- [`pyjanitor`](pyjanitor): Pyjanitor image for development work.
