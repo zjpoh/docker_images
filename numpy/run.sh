@@ -8,46 +8,54 @@ case $1 in
     ;;
 esac
 
-if [ $OVERWRITE ] || [ ! $(docker images -q numpy) ]; then
-  echo Build docker image
-  echo
-  docker build -t numpy .
-else
-  echo Numpy docker image already exist
-  echo
-fi
+NAME=numpy
 
 if [ ! -d $HOME/Documents/numpy ]; then
-  echo Cloning numpy repo
+  echo Cloning numpy repo to local machine
   echo
-  cd $HOME/Documents
+  pushd $HOME/Documents
   git clone https://github.com/zjpoh/numpy.git
+  cd numpy
   git remote add upstream https://github.com/numpy/numpy.git
-else
-  echo Numpy repo already exists
-  echo
+  popd
 fi
 
-if [ ! $(docker ps -a -q -f name=numpy) ]; then
-  echo Run numpy Docker container
+if [ $OVERWRITE ]; then
+  echo Overwrite enable
+  if [ $(docker ps -q -f name=$NAME) ]; then
+    echo Stop container
+    docker stop $NAME > /dev/null
+  fi
+  if [ $(docker ps -a -q -f name=$NAME) ]; then
+    echo Remove container
+    docker rm $NAME > /dev/null
+  fi
+  if [ $(docker images -q $NAME) ]; then
+    echo Remove image
+    docker rmi $NAME > /dev/null
+  fi
+fi
+
+if [ ! $(docker images -q $NAME) ]; then
+  echo Build docker image
+  echo
+  docker build -t $NAME .
+fi
+
+if [ ! $(docker ps -a -q -f name=$NAME) ]; then
+  echo Run docker container
   echo
   docker run \
     -dit \
-    --name numpy \
-    -v $HOME/Documents/numpy:/root/numpy \
-    numpy
-else
-  echo Numpy Docker container already exists
-  echo
+    --name $NAME \
+    -v $HOME/Documents/$NAME:/root/$NAME \
+    $NAME
 fi
 
-if [ ! $(docker ps -q -f name=numpy) ]; then
+if [ ! $(docker ps -q -f name=$NAME) ]; then
   echo Start docker container
   echo
-  docker start numpy
-else
-  echo Numpy docker container already running
-  echo
+  docker start $NAME
 fi
 
-docker exec -it numpy bash
+docker exec -it $NAME bash

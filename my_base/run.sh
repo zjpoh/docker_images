@@ -8,34 +8,43 @@ case $1 in
     ;;
 esac
 
-if [ $OVERWRITE ] || [ ! $(docker images -q my_base) ]; then
-  echo Build docker image
-  echo
-  docker build -t my_base .
-else
-  echo My base docker image already exist
-  echo
+NAME=my_base
+
+if [ $OVERWRITE ]; then
+  echo Overwrite enable
+  if [ $(docker ps -q -f name=$NAME) ]; then
+    echo Stop container
+    docker stop $NAME
+  fi
+  if [ $(docker ps -a -q -f name=$NAME) ]; then
+    echo Remove container
+    docker rm $NAME
+  fi
+  if [ $(docker images -q $NAME) ]; then
+    echo Remove image
+    docker rmi $NAME
+  fi
 fi
 
-if [ ! $(docker ps -a -q -f name=my_base) ]; then
-  echo Run my base docker container
+if [ ! $(docker images -q $NAME) ]; then
+  echo Build docker image
+  echo
+  docker build -t $NAME .
+fi
+
+if [ ! $(docker ps -a -q -f name=$NAME) ]; then
+  echo Run docker container
   echo
   docker run \
     -dit \
-    --name my_base \
-    my_base
-else
-  echo My base docker container already exists
-  echo
+    --name $NAME \
+    $NAME
 fi
 
-if [ ! $(docker ps -q -f name=my_base) ]; then
+if [ ! $(docker ps -q -f name=$NAME) ]; then
   echo Start docker container
   echo
-  docker start my_base
-else
-  echo My base docker container already running
-  echo
+  docker start $NAME
 fi
 
-docker exec -it my_base bash
+docker exec -it $NAME bash
