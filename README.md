@@ -22,5 +22,6 @@ docker start/stop <container_name>
 
 # Image descriptions
 
+- [`leetcode`](leetcode): Leetcode image.
 - [`my_base`](my_base): My base image containing myrc.
 - [`numpy`](numpy): Numpy image for development work.
